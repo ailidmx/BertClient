@@ -69,4 +69,24 @@ function doGet(e) {
   return ContentService.createTextOutput('OK');
 }
 
+// ---- Install helpers ----
+function installBertCore(options) {
+  if (BertCore && BertCore.Config && BertCore.Config.install_) {
+    return BertCore.Config.install_(options || {});
+  }
+  return null;
+}
+
+function installBertTriggers() {
+  if (BertCore && BertCore.installCierreTriggers) {
+    BertCore.installCierreTriggers();
+  }
+  if (BertCore && BertCore.installAperturaTriggers) {
+    BertCore.installAperturaTriggers();
+  }
+  if (BertCore && BertCore.installProduccionTriggers) {
+    BertCore.installProduccionTriggers();
+  }
+}
+
 
