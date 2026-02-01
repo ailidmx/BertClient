@@ -1,0 +1,15 @@
+{
+  "timeZone": "America/New_York",
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "dependencies": {
+    "libraries": [
+      {
+        "userSymbol": "BertCore",
+        "libraryId": "1-F0tbRTR6LesPJt4ICr75VqdswsF8shcVAm8RkD40B4HrwL2WbLH7lLz",
+        "version": "4",
+        "developmentMode": false
+      }
+    ]
+  }
+}
