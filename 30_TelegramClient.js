@@ -50,7 +50,7 @@ const Telegram = (() => {
       muteHttpExceptions: true
     });
 
-    logTelegramResponse_(res, 'sendPhotoUrl_');
+    logTelegramResponse_(res, 'sendPhotoUrl_', { apiUrl: url, photoUrl: String(photoUrl || '') });
     return res;
   }
 
@@ -72,7 +72,7 @@ const Telegram = (() => {
       muteHttpExceptions: true
     });
 
-    logTelegramResponse_(res, 'sendPhotoUrlToChat_');
+    logTelegramResponse_(res, 'sendPhotoUrlToChat_', { apiUrl: url, photoUrl: String(photoUrl || ''), chatId: Number(chatId) });
     return res;
   }
 
@@ -107,7 +107,7 @@ const Telegram = (() => {
       // ⚠️ ne PAS mettre contentType ici: UrlFetchApp le gère en multipart auto
     });
 
-    logTelegramResponse_(res, 'sendPhotoFromUrlAsBlob_');
+    logTelegramResponse_(res, 'sendPhotoFromUrlAsBlob_', { apiUrl: url, photoUrl: String(imageUrl || '') });
     return res;
   }
 
@@ -136,7 +136,7 @@ const Telegram = (() => {
       muteHttpExceptions: true
     });
 
-    logTelegramResponse_(res, 'sendPhotoFromUrlAsBlobToChat_');
+    logTelegramResponse_(res, 'sendPhotoFromUrlAsBlobToChat_', { apiUrl: url, photoUrl: String(imageUrl || ''), chatId: Number(chatId) });
     return res;
   }
 
@@ -397,10 +397,10 @@ const Telegram = (() => {
     }
   }
 
-  function logTelegramResponse_(res, ctx) {
+  function logTelegramResponse_(res, ctx, meta) {
     const code = res.getResponseCode();
     const body = safeContentText_(res);
-    Utils.debug_(`Telegram ${ctx} status=${code} body=${body}`);
+    Utils.debug_(`Telegram ${ctx} status=${code} body=${body}`, meta || undefined);
   }
 
   return {

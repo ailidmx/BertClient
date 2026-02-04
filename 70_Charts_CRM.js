@@ -542,6 +542,7 @@ const CRM_Charts = (() => {
     const pdRed = [];
     const pdOrange = [];
     const pdGreen = [];
+    const pdStar = [];
     const currMap = buildMonthlyCajaPrevMap_(rows, idxFecha, idxCaja, start, end, headerRow);
     const prevMap = buildMonthlyCajaPrevMap_(rows, idxFecha, idxCaja, prevStart, prevEnd, headerRow);
     const objMap = buildMonthlyCajaPrevMap_(rows, idxFecha, idxObj, start, end, headerRow);
