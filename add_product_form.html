@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Add Product</h2>
+
+    <label>Articulo</label><br>
+    <input type="text" id="articulo"><br><br>
+
+    <label>Proveedor</label><br>
+    <input type="text" id="proveedor"><br><br>
+
+    <label>Precio por kilo/pieza</label><br>
+    <input type="number" id="precio"><br><br>
+
+    <label>Piezas</label><br>
+    <input type="number" id="piezas"><br><br>
+
+    <button onclick="save()">Save</button>
+
+    <script>
+      function save() {
+        const data = {
+          articulo: document.getElementById("articulo").value,
+          proveedor: document.getElementById("proveedor").value,
+          precio: document.getElementById("precio").value,
+          piezas: document.getElementById("piezas").value
+        };
+
+        google.script.run
+          .withSuccessHandler(() => alert("Saved!"))
+          .saveNewProduct(data);
+      }
+    </script>
+  </body>
+</html>
