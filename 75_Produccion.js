@@ -48,13 +48,16 @@ const Produccion = (() => {
   }
 
   function listCategorias_() {
-    const rows = SheetsRepo.getRows_(CFG.SHEETS.GENERAL);
+    const rows = SheetsRepo.getRows_(CFG.SHEETS.CONTA_CATEGORIAS);
     if (!rows.length) return [];
-    const headerRow = detectHeaderRowByKeywords_(rows, ['ARTICULO', 'CATEGORIA', 'PROVEEDOR', 'PIEZAS', 'MARGEN']);
+    const headerRow = detectHeaderRowByKeywords_(rows, ['TIPO', 'CATEGORIA']);
     const headers = rows[headerRow - 1];
-    const idxCat = SheetsRepo.findHeaderIndex_(headers, CFG.COLS.GENERAL.CATEGORIA);
+    const idxTipo = SheetsRepo.findHeaderIndex_(headers, CFG.COLS.CONTA.TIPO);
+    const idxCat = SheetsRepo.findHeaderIndex_(headers, CFG.COLS.CONTA.CATEGORIA);
     const categories = {};
     for (let i = headerRow; i < rows.length; i++) {
+      const tipo = String(rows[i][idxTipo] || '').trim().toUpperCase();
+      if (tipo !== 'GASTOS') continue;
       const val = rows[i][idxCat];
       if (!val) continue;
       categories[Utils.trimLower(val)] = String(val).trim();
@@ -149,7 +152,7 @@ const Produccion = (() => {
       const cats = listCategorias_();
       state.options = cats;
       saveState_(state);
-      sendInline_(activeChatId, '📂 Elige una categoría', buildOptionButtons_(cats, 'cat'));
+      sendInline_(activeChatId, '🧾 Selecciona la categoría del gasto', buildOptionButtons_(cats, 'cat'));
       return;
     }
 
