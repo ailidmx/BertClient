@@ -63,31 +63,3 @@ function installAperturaTriggers() {
     throw err;
   }
 }
-
-function installProduccionTriggers() {
-  try {
-    const all = ScriptApp.getProjectTriggers();
-    all.forEach(t => {
-      if (t.getHandlerFunction() === 'produccion_watchConA') {
-        ScriptApp.deleteTrigger(t);
-      }
-    });
-
-    ScriptApp.newTrigger('produccion_watchConA')
-      .timeBased()
-      .everyMinutes(15)
-      .create();
-
-    Utils.debug_('✅ Produccion trigger installed (every 15 min)');
-
-  } catch (err) {
-    Utils.debug_('installProduccionTriggers error', err);
-    try {
-      Telegram.sendTextToTopic_(
-        'ERRORES',
-        `🚨 *ERROR installProduccionTriggers*\n\`\`\`\n${String(err)}\n\`\`\``
-      );
-    } catch (_) {}
-    throw err;
-  }
-}

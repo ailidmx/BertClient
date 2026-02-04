@@ -284,16 +284,3 @@ function groupCatalogByCategory_(items) {
     }));
 }
 
-function produccion_watchConA() {
-  try {
-    Utils.debug_('produccion_watchConA trigger', { now: Utils.formatDateMX(Utils.nowMX()) });
-    Produccion.checkNewMateriaPrima_();
-    Utils.debug_('produccion_watchConA done');
-  } catch (err) {
-    Utils.debug_('produccion_watchConA error', err && err.stack ? err.stack : err);
-    Telegram.sendTextToTopic_(
-      'ERRORES',
-      `❌ produccion_watchConA\n${String(err)}`
-    );
-  }
-}
