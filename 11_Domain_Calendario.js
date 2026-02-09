@@ -31,6 +31,10 @@ const Calendario = (() => {
     const idxCumulMes = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.CUMUL_MES);
     const idxObjMes = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.OBJ_MES);
     const idxRitmoVenta = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.RITMO_VENTA_M);
+    const idxCumulSem = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.CUMUL_SEM);
+    const idxObjSem = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.OBJ_SEM);
+    const idxPctSem = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.PCT_SEM);
+    const idxRitmoVentaSem = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.RITMO_VENTA_S);
     const idxGratisDia = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.GRATIS_DIA);
     const idxGratisMes = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.GRATIS_MES);
     const idxGratisDiaPromo2 = SheetsRepo.findHeaderIndexOptional_(headers, CFG.COLS.CAL.GRATIS_DIA_PROMO2);
@@ -76,6 +80,10 @@ const Calendario = (() => {
         cumulMes: idxCumulMes != null ? rows[i][idxCumulMes] : 0,
         objMes: idxObjMes != null ? rows[i][idxObjMes] : 0,
         ritmoVentaMes: idxRitmoVenta != null ? rows[i][idxRitmoVenta] : '',
+        cumulSem: idxCumulSem != null ? rows[i][idxCumulSem] : 0,
+        objSem: idxObjSem != null ? rows[i][idxObjSem] : 0,
+        pctSem: idxPctSem != null ? rows[i][idxPctSem] : '',
+        ritmoVentaSem: idxRitmoVentaSem != null ? rows[i][idxRitmoVentaSem] : '',
         gratisDia: idxGratisDia != null ? rows[i][idxGratisDia] : 0,
         gratisMes: idxGratisMes != null ? rows[i][idxGratisMes] : 0,
         gratisDiaPromo2: idxGratisDiaPromo2 != null ? rows[i][idxGratisDiaPromo2] : 0,

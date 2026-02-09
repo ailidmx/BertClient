@@ -4,6 +4,8 @@ const Config = (() => {
   const PROP_KEYS = {
     API_TOKEN: 'API_TOKEN',
     DATA_SPREADSHEET_ID: 'DATA_SPREADSHEET_ID',
+    BOT_API_BASE_URL: 'BOT_API_BASE_URL',
+    BOT_API_TOKEN: 'BOT_API_TOKEN',
     TELEGRAM_TOKEN: 'TELEGRAM_TOKEN',
     TELEGRAM_BOT_USERNAME: 'TELEGRAM_BOT_USERNAME',
     TELEGRAM_WEBAPP_URL: 'TELEGRAM_WEBAPP_URL',
@@ -26,6 +28,13 @@ const Config = (() => {
   function getData_() {
     return {
       SPREADSHEET_ID: getProp_(PROP_KEYS.DATA_SPREADSHEET_ID) || CFG.DATA.SPREADSHEET_ID
+    };
+  }
+
+  function getBotApi_() {
+    return {
+      BASE_URL: getProp_(PROP_KEYS.BOT_API_BASE_URL) || (CFG.BOT_API && CFG.BOT_API.BASE_URL) || '',
+      TOKEN: getProp_(PROP_KEYS.BOT_API_TOKEN) || (CFG.BOT_API && CFG.BOT_API.TOKEN) || ''
     };
   }
 
@@ -76,6 +85,7 @@ const Config = (() => {
     return {
       apiToken: getApiToken_(),
       data: getData_(),
+      botApi: getBotApi_(),
       telegram: getTelegram_()
     };
   }
@@ -83,6 +93,7 @@ const Config = (() => {
   return {
     getApiToken_,
     getData_,
+    getBotApi_,
     getTelegram_,
     install_
   };

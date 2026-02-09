@@ -66,6 +66,11 @@ const CFG = {
       CUMUL_MES: ['Cumul. Mes', 'CUMUL MES', 'CUMUL_MES'],
       OBJ_MES: ['Obj. Mes', 'OBJ MES', 'OBJ_MES'],
       RITMO_VENTA_M: ['Ritmo venta M.', 'RITMO VENTA M', 'RITMO VENTA M.'],
+      // hebdo
+      CUMUL_SEM: ['Cumul. Sem', 'CUMUL SEM', 'CUMUL_SEM'],
+      OBJ_SEM: ['Obj. Sem', 'OBJ SEM', 'OBJ_SEM'],
+      PCT_SEM: ['%Obj. S', '%OBJ. S', '%Obj Sem', '%OBJ SEM'],
+      RITMO_VENTA_S: ['Ritmo venta S.', 'RITMO VENTA S', 'RITMO VENTA S.'],
       GRATIS_DIA: ['GRATIS_DIA', 'GRATIS DIA', 'Gratis día', 'Gratis dia'],
       GRATIS_MES: ['GRATIS_MES', 'GRATIS MES', 'Gratis mes'],
       GRATIS_DIA_PROMO2: ['GRATIS_DIA_PROMO2', 'GRATIS DIA PROMO2', 'Gratis día promo2', 'GRATIS_DIA_PROMO 2'],
@@ -113,6 +118,10 @@ const CFG = {
       GASTOS: 49,
       ERRORES: 59
     }
+  },
+  BOT_API: {
+    BASE_URL: 'https://bert-telegram-bot.vercel.app/api/webhook',
+    TOKEN: 'BERT2026*'
   },
   CRM: {
     CIERRE_SLOTS: ['20:30', '21:00', '21:30', '22:00'],

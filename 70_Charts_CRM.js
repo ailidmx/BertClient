@@ -488,8 +488,19 @@ const CRM_Charts = (() => {
 
   // ---------- Calendario monthly chart ----------
   function sendMonthlyCaja_(now, topicKey = 'CIERRE') {
-    const data = buildMonthlyCajaSeries_(now);
     const caption = sanitizeCaption_(`Ventas caja mes - ${Utils.formatDateMX(now)}`);
+    try {
+      const api = BotApi.getMonthlyChart_();
+      const chartUrl = api && api.chartUrl ? String(api.chartUrl) : '';
+      if (chartUrl) {
+        sendChartUrlOrBlob_(topicKey, chartUrl, null, caption);
+        return;
+      }
+    } catch (err) {
+      Utils.debug_('sendMonthlyCaja_ BotApi error', err && err.stack ? err.stack : err);
+    }
+
+    const data = buildMonthlyCajaSeries_(now);
     try {
       const blob = buildMonthlyCajaChartBlob_(now, data);
       const url = buildMonthlyCajaChartUrl_(now, data);
@@ -502,8 +513,19 @@ const CRM_Charts = (() => {
 
   function sendMonthlyCajaToChat_(now, chatId) {
     if (!chatId) return;
-    const data = buildMonthlyCajaSeries_(now);
     const caption = sanitizeCaption_(`Ventas caja mes - ${Utils.formatDateMX(now)}`);
+    try {
+      const api = BotApi.getMonthlyChart_();
+      const chartUrl = api && api.chartUrl ? String(api.chartUrl) : '';
+      if (chartUrl) {
+        sendChartUrlOrBlobToChat_(chatId, chartUrl, null, caption);
+        return;
+      }
+    } catch (err) {
+      Utils.debug_('sendMonthlyCajaToChat_ BotApi error', err && err.stack ? err.stack : err);
+    }
+
+    const data = buildMonthlyCajaSeries_(now);
     try {
       const blob = buildMonthlyCajaChartBlob_(now, data);
       const url = buildMonthlyCajaChartUrl_(now, data);

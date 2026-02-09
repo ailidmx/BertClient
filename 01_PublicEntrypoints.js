@@ -10,18 +10,15 @@
 function onFormSubmit(e) {
   try {
     const venta = Ventas.parseVentaFromEvent_(e);
-    const kpi = Ventas.computeKpiDiario_(new Date());
-
-    // 1) message complet
-    const fullMsg = Messages.buildVentaMessage_(venta, kpi);
-
-    // 2) punchline clean pour le meme (pas de markdown chars)
-    const punch = String(Messages.buildVentaPunch_(venta, kpi))
-      .replace(/[*_`\[\]()]/g, '');
-
-    const memeUrl = MemeGen.buildVentaMeme_(venta, kpi, punch);
-
-    sendVentaAlert_(venta, kpi, 'VENTAS');
+    BotApi.getJson_('alert_venta', {
+      vendedor: venta.vendedor,
+      productos: venta.productos,
+      pago: venta.pago,
+      comentario: venta.comentario,
+      gratis: venta.gratis,
+      gratisPromo2: venta.gratisPromo2,
+      topicKey: 'VENTAS'
+    });
 
   } catch (err) {
     Utils.debug_('onFormSubmit error', err && err.stack ? err.stack : err);
@@ -33,36 +30,20 @@ function onFormSubmit(e) {
 }
 
 function sendVentaAlert_(venta, kpi, topicKey) {
-  Utils.debug_('sendVentaAlert_ topic', topicKey);
-  const fullMsg = Messages.buildVentaMessage_(venta, kpi);
-  const punch = String(Messages.buildVentaPunch_(venta, kpi))
-    .replace(/[*_`\[\]()]/g, '');
-  const memeUrl = MemeGen.buildVentaMeme_(venta, kpi, punch);
-
-  Telegram.sendPhotoUrlWithFallbackToTopic_(topicKey, memeUrl, punch);
-  Telegram.sendTextToTopic_(topicKey, fullMsg);
-
-  if (topicKey === 'VENTAS') {
-    notifyGoalReachedIfNeeded_(kpi);
-  }
+  Utils.debug_('sendVentaAlert_ via BotApi', topicKey);
+  BotApi.getJson_('alert_venta', {
+    vendedor: venta.vendedor,
+    productos: venta.productos,
+    pago: venta.pago,
+    comentario: venta.comentario,
+    gratis: venta.gratis,
+    gratisPromo2: venta.gratisPromo2,
+    topicKey: topicKey || 'VENTAS'
+  });
 }
 
 function notifyGoalReachedIfNeeded_(kpi) {
-  try {
-    if (!kpi || !kpi.goal || kpi.goal <= 0) return;
-    if (kpi.sold <= kpi.goal) return;
-
-    const key = `GOAL_OVER:${Utils.dateKeyMX(new Date())}`;
-    if (State.wasSent_(key)) return;
-
-    const msg = Messages.buildGoalReachedMessage_(kpi);
-    const memeUrl = MemeGen.buildGoalReachedMeme_(Utils.nowMX(), kpi);
-    Telegram.sendPhotoUrlWithFallbackToTopic_('VENTAS', memeUrl, msg);
-    Telegram.sendTextToTopic_('VENTAS', msg);
-    State.markSent_(key);
-  } catch (err) {
-    Utils.debug_('notifyGoalReachedIfNeeded_ error', err && err.stack ? err.stack : err);
-  }
+  Utils.debug_('notifyGoalReachedIfNeeded_ skipped (handled in BotApi alerts)');
 }
 
 /**
@@ -70,9 +51,8 @@ function notifyGoalReachedIfNeeded_(kpi) {
  */
 function crm_cierreManual() {
   try {
-    const now = Utils.nowMX();
-    Utils.debug_('crm_cierreManual', { now: Utils.formatDateMX(now) });
-    CRM.runHourly_(now, { force: true, topicKey: 'CIERRE' });
+    Utils.debug_('crm_cierreManual via BotApi');
+    BotApi.getJson_('alert_cierre', { force: true, topicKey: 'CIERRE' });
   } catch (err) {
     Utils.debug_('crm_cierreManual error', err && err.stack ? err.stack : err);
     Telegram.sendTextToTopic_(
@@ -87,9 +67,8 @@ function crm_cierreManual() {
  */
 function crm_cierreManual_test() {
   try {
-    const now = Utils.nowMX();
-    Utils.debug_('crm_cierreManual_test', { now: Utils.formatDateMX(now) });
-    CRM.runHourly_(now, { force: true, topicKey: 'ERRORES' });
+    Utils.debug_('crm_cierreManual_test via BotApi');
+    BotApi.getJson_('alert_cierre', { force: true, topicKey: 'ERRORES' });
   } catch (err) {
     Utils.debug_('crm_cierreManual_test error', err && err.stack ? err.stack : err);
     Telegram.sendTextToTopic_(
@@ -105,9 +84,8 @@ function crm_cierreManual_test() {
  */
 function crm_openingAlert() {
   try {
-    Utils.debug_('crm_openingAlert trigger', { now: Utils.formatDateMX(Utils.nowMX()) });
-    CRM.runApertura_(Utils.nowMX(), { force: false });
-    Utils.debug_('crm_openingAlert done');
+    Utils.debug_('crm_openingAlert via BotApi');
+    BotApi.getJson_('alert_opening', { force: false, topicKey: 'VENTAS' });
   } catch (err) {
     Utils.debug_('crm_openingAlert error', err && err.stack ? err.stack : err);
     Telegram.sendTextToTopic_(
@@ -122,9 +100,8 @@ function crm_openingAlert() {
  */
 function crm_runNow_slot() {
   try {
-    const now = Utils.nowMX();
-    Utils.debug_('crm_runNow_slot', { now: Utils.formatDateMX(now) });
-    CRM.runHourly_(now, { force: false, topicKey: 'CIERRE' });
+    Utils.debug_('crm_runNow_slot via BotApi');
+    BotApi.getJson_('alert_cierre', { force: false, topicKey: 'CIERRE' });
   } catch (err) {
     Utils.debug_('crm_runNow_slot error', err && err.stack ? err.stack : err);
     Telegram.sendTextToTopic_(

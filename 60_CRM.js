@@ -168,7 +168,17 @@ const CRM = (() => {
   }
 
   function maybeSendInicioFinMesAlerts_(now, topicKey, force) {
-    if (Calendario.isFirstWorkingDay_(now)) {
+    let inicioResult = null;
+    let finResult = null;
+    try {
+      inicioResult = BotApi.shouldSendInicioMes_();
+      finResult = BotApi.shouldSendFinMes_();
+    } catch (err) {
+      Utils.debug_('BotApi alert check error', err && err.stack ? err.stack : err);
+    }
+
+    const shouldInicio = inicioResult && inicioResult.shouldSend;
+    if (shouldInicio) {
       const key = keyDay_(now, 'INICIO_MES');
       sendOnce_(key, () => {
         const cal = Calendario.getRowForDate_(now);
@@ -177,7 +187,8 @@ const CRM = (() => {
       }, force);
     }
 
-    if (Calendario.isLastWorkingDay_(now)) {
+    const shouldFin = finResult && finResult.shouldSend;
+    if (shouldFin) {
       const key = keyDay_(now, 'FIN_MES');
       sendOnce_(key, () => {
         const cal = Calendario.getRowForDate_(now);
