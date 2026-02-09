@@ -7,8 +7,6 @@ const Bot = (() => {
   const ACTIONS = {
     DAILY_CHART: 'bert:daily_chart',
     MONTH_CHART: 'bert:month_chart',
-    CIERRE_HOY: 'bert:cierre_hoy',
-    APERTURA_HOY: 'bert:apertura_hoy',
     ESTADO_MES: 'bert:estado_mes',
     MINI_APP: 'bert:mini_app',
     PICK_DATE: 'bert:pick_date',
@@ -125,10 +123,6 @@ const Bot = (() => {
         { text: '📅 Gráfica mes', callback_data: ACTIONS.MONTH_CHART }
       ],
       [
-        { text: '✅ Cierre hoy', callback_data: ACTIONS.CIERRE_HOY },
-        { text: '🌅 Apertura hoy', callback_data: ACTIONS.APERTURA_HOY }
-      ],
-      [
         { text: '📈 Estado mes', callback_data: ACTIONS.ESTADO_MES }
       ],
       [
@@ -174,19 +168,6 @@ const Bot = (() => {
       return;
     }
 
-    if (data === ACTIONS.CIERRE_HOY) {
-      Utils.debug_('Bot.action', ACTIONS.CIERRE_HOY);
-      CRM.runHourly_(now, { force: true });
-      Telegram.sendTextToChat_(targetChatId, '✅ Cierre ejecutado.', { parse_mode: 'Markdown' });
-      return;
-    }
-
-    if (data === ACTIONS.APERTURA_HOY) {
-      Utils.debug_('Bot.action', ACTIONS.APERTURA_HOY);
-      CRM.runApertura_(now, { force: true, ignoreClosed: true });
-      Telegram.sendTextToChat_(targetChatId, '✅ Apertura ejecutada.', { parse_mode: 'Markdown' });
-      return;
-    }
 
     if (data === ACTIONS.ESTADO_MES) {
       Utils.debug_('Bot.action', ACTIONS.ESTADO_MES);

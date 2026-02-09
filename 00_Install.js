@@ -16,10 +16,8 @@ function installBertCore(opts) {
   const triggers = [];
 
   if (options.installTriggers !== false) {
-    installCierreTriggers();
-    installAperturaTriggers();
     installProduccionTriggers();
-    triggers.push('cierre', 'apertura', 'produccion');
+    triggers.push('produccion');
   }
 
   return { installed, triggers };

@@ -42,74 +42,7 @@ function sendVentaAlert_(venta, kpi, topicKey) {
   });
 }
 
-function notifyGoalReachedIfNeeded_(kpi) {
-  Utils.debug_('notifyGoalReachedIfNeeded_ skipped (handled in BotApi alerts)');
-}
-
-/**
- * CIERRE manual (producción)
- */
-function crm_cierreManual() {
-  try {
-    Utils.debug_('crm_cierreManual via BotApi');
-    BotApi.getJson_('alert_cierre', { force: true, topicKey: 'CIERRE' });
-  } catch (err) {
-    Utils.debug_('crm_cierreManual error', err && err.stack ? err.stack : err);
-    Telegram.sendTextToTopic_(
-      'ERRORES',
-      `❌ crm_cierreManual\n${String(err)}`
-    );
-  }
-}
-
-/**
- * CIERRE manual (test)
- */
-function crm_cierreManual_test() {
-  try {
-    Utils.debug_('crm_cierreManual_test via BotApi');
-    BotApi.getJson_('alert_cierre', { force: true, topicKey: 'ERRORES' });
-  } catch (err) {
-    Utils.debug_('crm_cierreManual_test error', err && err.stack ? err.stack : err);
-    Telegram.sendTextToTopic_(
-      'ERRORES',
-      `❌ crm_cierreManual_test\n${String(err)}`
-    );
-  }
-}
-
-
-/**
- * CRM: alerte d'ouverture (08:00)
- */
-function crm_openingAlert() {
-  try {
-    Utils.debug_('crm_openingAlert via BotApi');
-    BotApi.getJson_('alert_opening', { force: false, topicKey: 'VENTAS' });
-  } catch (err) {
-    Utils.debug_('crm_openingAlert error', err && err.stack ? err.stack : err);
-    Telegram.sendTextToTopic_(
-      'ERRORES',
-      `❌ crm_openingAlert\n${String(err)}`
-    );
-  }
-}
-
-/**
- * CIERRE hourly trigger slot
- */
-function crm_runNow_slot() {
-  try {
-    Utils.debug_('crm_runNow_slot via BotApi');
-    BotApi.getJson_('alert_cierre', { force: false, topicKey: 'CIERRE' });
-  } catch (err) {
-    Utils.debug_('crm_runNow_slot error', err && err.stack ? err.stack : err);
-    Telegram.sendTextToTopic_(
-      'ERRORES',
-      `❌ crm_runNow_slot\n${String(err)}`
-    );
-  }
-}
+// cierre/apertura entrypoints removed: handled by bot
 
 
 function doPost(e) {
