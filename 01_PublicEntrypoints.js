@@ -43,8 +43,6 @@ function sendVentaAlert_(venta, kpi, topicKey) {
 }
 
 // cierre/apertura entrypoints removed: handled by bot
-
-
 function doPost(e) {
   try {
     const data = JSON.parse(e && e.postData ? e.postData.contents : '{}');
