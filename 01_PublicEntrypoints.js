@@ -42,7 +42,124 @@ function sendVentaAlert_(venta, kpi, topicKey) {
   });
 }
 
-// cierre/apertura entrypoints removed: handled by bot
+/**
+ * Compat trigger wrapper (migration vers bert-telegram-bot core)
+ * Trigger Apps Script historique: crm_openingAlert
+ */
+function crm_openingAlert() {
+  try {
+    Utils.debug_('crm_openingAlert trigger -> BotApi', { now: Utils.formatDateMX(Utils.nowMX()) });
+    BotApi.getJson_('alert_opening', {
+      topicKey: 'VENTAS',
+      force: true
+    });
+    Utils.debug_('crm_openingAlert done');
+  } catch (err) {
+    Utils.debug_('crm_openingAlert error', err && err.stack ? err.stack : err);
+    Telegram.sendTextToTopic_(
+      'ERRORES',
+      `❌ crm_openingAlert\n${String(err)}`
+    );
+  }
+}
+
+/**
+ * Compat trigger wrapper (migration vers bert-telegram-bot core)
+ * Trigger Apps Script historique: crm_runNow_slot
+ */
+function crm_runNow_slot(targetDate) {
+  try {
+    Utils.debug_('crm_runNow_slot trigger -> BotApi', { now: Utils.formatDateMX(Utils.nowMX()) });
+    // force=true: évite les skips liés au nearMinute() des triggers Apps Script
+    const payload = {
+      topicKey: 'CIERRE',
+      force: true
+    };
+    if (targetDate) payload.targetDate = String(targetDate);
+    BotApi.getJson_('alert_cierre', payload);
+    Utils.debug_('crm_runNow_slot done');
+  } catch (err) {
+    Utils.debug_('crm_runNow_slot error', err && err.stack ? err.stack : err);
+    Telegram.sendTextToTopic_(
+      'ERRORES',
+      `❌ crm_runNow_slot\n${String(err)}`
+    );
+  }
+}
+
+/**
+ * Relance manuelle du cierre pour hier (date Mexico)
+ */
+function crm_runNow_slot_yesterday() {
+  const now = Utils.nowMX();
+  const y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  const yKey = Utils.dateKeyMX(y);
+  return crm_runNow_slot(yKey);
+}
+
+/**
+ * Test manuel hebdo (migration vers bert-telegram-bot core)
+ * Envoie l'alerte de cierre semanal via API bot.
+ */
+function crm_weeklyCloseManual() {
+  try {
+    const now = Utils.nowMX();
+    const topicKey = 'CIERRE';
+    const botApi = Config.getBotApi_();
+    Utils.debug_('crm_weeklyCloseManual -> BotApi', { now: Utils.formatDateMX(now) });
+    const result = BotApi.getJson_('alert_weekly_close', {
+      topicKey,
+      force: true
+    });
+    Utils.debug_('crm_weeklyCloseManual result', result);
+
+    // Fallback debug: si chartUrl no viene en result, consultar respuesta raw directamente
+    let chartUrl = result && result.chartUrl ? String(result.chartUrl) : '';
+    if (!chartUrl) {
+      try {
+        const rawUrl = `${botApi.BASE_URL}?action=alert_weekly_close&token=${encodeURIComponent(botApi.TOKEN || '')}&topicKey=${encodeURIComponent(topicKey)}&force=true`;
+        const rawRes = UrlFetchApp.fetch(rawUrl, { muteHttpExceptions: true });
+        const rawText = rawRes.getContentText() || '';
+        const parsed = JSON.parse(rawText || '{}');
+        if (parsed && parsed.chartUrl) chartUrl = String(parsed.chartUrl);
+        Utils.debug_('crm_weeklyCloseManual raw fallback', {
+          status: rawRes.getResponseCode(),
+          hasChart: !!chartUrl,
+          keys: Object.keys(parsed || {})
+        });
+      } catch (fallbackErr) {
+        Utils.debug_('crm_weeklyCloseManual raw fallback error', fallbackErr && fallbackErr.stack ? fallbackErr.stack : fallbackErr);
+      }
+    }
+
+    const msg = [
+      '✅ crm_weeklyCloseManual',
+      `api=${botApi.BASE_URL || '-'}`,
+      `topic=${topicKey}`,
+      `ok=${result && result.ok === true ? 'true' : 'false'}`,
+      `week=${result && result.week ? result.week : '-'}`,
+      `labels=${result && result.labels != null ? result.labels : '-'}`,
+      `from=${result && result.from ? result.from : '-'}`,
+      `to=${result && result.to ? result.to : '-'}`,
+      `chart=${chartUrl || '-'}`
+    ].join('\n');
+
+    // Signal dans le topic CIERRE pour confirmer le thread visé + URL chart si dispo
+    Telegram.sendTextToTopic_(topicKey, `🧪 Weekly close manual ejecutado\nweek=${result && result.week ? result.week : '-'}\nlabels=${result && result.labels != null ? result.labels : '-'}\nchart=${chartUrl || '-'}`);
+
+    Telegram.sendTextToTopic_(
+      'ERRORES',
+      msg
+    );
+  } catch (err) {
+    Utils.debug_('crm_weeklyCloseManual error', err && err.stack ? err.stack : err);
+    Telegram.sendTextToTopic_(
+      'ERRORES',
+      `❌ crm_weeklyCloseManual\n${String(err)}`
+    );
+  }
+}
+
 function doPost(e) {
   try {
     const data = JSON.parse(e && e.postData ? e.postData.contents : '{}');
