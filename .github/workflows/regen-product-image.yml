@@ -1,4 +1,5 @@
 name: regen-product-image
+# refresh: 2026-02-12 to ensure workflow_dispatch registration stays active
 
 on:
   workflow_dispatch:
