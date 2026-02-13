@@ -3,6 +3,7 @@ import base64
 import json
 import os
 import re
+from urllib.parse import quote
 import urllib.request
 import urllib.error
 from pathlib import Path
@@ -155,9 +156,10 @@ def main():
     b64, used_model = generate_image_with_fallback(prompt, api_key, models=models, size=args.size)
     out_path.write_bytes(base64.b64decode(b64))
 
+    encoded_filename = quote(filename)
     cdn_url = (
         f"https://cdn.jsdelivr.net/gh/{args.repo_owner}/{args.repo_name}@{args.repo_ref}/"
-        f"{args.repo_path}/{filename}"
+        f"{args.repo_path}/{encoded_filename}"
     )
     url_a1 = f"{col_to_letter(idx_url)}{row_number}"
     img_a1 = f"{col_to_letter(idx_img)}{row_number}"
