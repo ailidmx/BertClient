@@ -29,8 +29,24 @@ def col_to_letter(col_idx_zero_based: int) -> str:
 def detect_header_row(values):
     for i in range(min(20, len(values))):
         row = [str(c or "").strip().upper() for c in values[i]]
-        if "ARTICULO" in row and "URL" in row and "IMAGE" in row:
+        if "ARTICULO" in row:
             return i
+    return None
+
+
+def normalize_header(text: str) -> str:
+    value = (text or "").strip().upper()
+    value = value.replace("Á", "A").replace("É", "E").replace("Í", "I").replace("Ó", "O").replace("Ú", "U")
+    value = re.sub(r"\s+", " ", value)
+    return value
+
+
+def find_header_index(headers, candidates):
+    normalized = [normalize_header(h) for h in headers]
+    candidate_set = {normalize_header(c) for c in candidates}
+    for idx, h in enumerate(normalized):
+        if h in candidate_set:
+            return idx
     return None
 
 
@@ -81,13 +97,19 @@ def main():
     if header_row is None:
         raise SystemExit("GENERAL headers not found")
 
-    headers = [str(c or "").strip().upper() for c in values[header_row]]
-    idx_art = headers.index("ARTICULO")
-    idx_url = headers.index("URL")
-    idx_img = headers.index("IMAGE")
+    headers = [str(c or "").strip() for c in values[header_row]]
+    idx_art = find_header_index(headers, ["ARTICULO", "ARTÍCULO"])
+    idx_url_gh = find_header_index(headers, ["URL GH", "GH URL", "URL_GH"])
+    idx_url_cdn = find_header_index(headers, ["URL", "URL CDN", "CDN URL"])
+    idx_img_gh = find_header_index(headers, ["IMAGE GH", "GH IMAGE", "IMAGEN GH"])
+    idx_img_cdn = find_header_index(headers, ["IMAGE", "IMAGEN", "IMAGE CDN"])
 
-    updates_url = []
-    updates_img = []
+    if idx_art is None:
+        raise SystemExit("ARTICULO header not found")
+    if idx_url_gh is None and idx_url_cdn is None and idx_img_gh is None and idx_img_cdn is None:
+        raise SystemExit("No URL/IMAGE target headers found")
+
+    updates = []
     touched = 0
 
     for r in range(header_row + 1, len(values)):
@@ -101,25 +123,41 @@ def main():
             continue
 
         encoded_filename = quote(filename)
+        gh_url = (
+            f"https://github.com/{args.repo_owner}/{args.repo_name}/blob/{args.repo_ref}/"
+            f"{args.repo_path}/{encoded_filename}?raw=true"
+        )
         cdn_url = (
             f"https://cdn.jsdelivr.net/gh/{args.repo_owner}/{args.repo_name}@{args.repo_ref}/"
             f"{args.repo_path}/{encoded_filename}"
         )
         row_number = r + 1
-        url_a1 = f"{col_to_letter(idx_url)}{row_number}"
-        img_a1 = f"{col_to_letter(idx_img)}{row_number}"
 
-        updates_url.append({"range": url_a1, "values": [[cdn_url]]})
-        updates_img.append({"range": img_a1, "values": [[f"=IMAGE({url_a1})"]]})
+        url_gh_a1 = f"{col_to_letter(idx_url_gh)}{row_number}" if idx_url_gh is not None else None
+        url_cdn_a1 = f"{col_to_letter(idx_url_cdn)}{row_number}" if idx_url_cdn is not None else None
+        img_gh_a1 = f"{col_to_letter(idx_img_gh)}{row_number}" if idx_img_gh is not None else None
+        img_cdn_a1 = f"{col_to_letter(idx_img_cdn)}{row_number}" if idx_img_cdn is not None else None
+
+        if url_gh_a1:
+            updates.append({"range": url_gh_a1, "values": [[gh_url]]})
+        if url_cdn_a1:
+            updates.append({"range": url_cdn_a1, "values": [[cdn_url]]})
+
+        if img_gh_a1:
+            formula = f"=IMAGE({url_gh_a1})" if url_gh_a1 else f'=IMAGE("{gh_url}")'
+            updates.append({"range": img_gh_a1, "values": [[formula]]})
+        if img_cdn_a1:
+            formula = f"=IMAGE({url_cdn_a1})" if url_cdn_a1 else f'=IMAGE("{cdn_url}")'
+            updates.append({"range": img_cdn_a1, "values": [[formula]]})
+
         touched += 1
 
     if args.dry_run:
         print(json.dumps({"ok": True, "dry_run": True, "matched": touched}, ensure_ascii=False))
         return
 
-    if updates_url:
-        ws.batch_update(updates_url, value_input_option="USER_ENTERED")
-        ws.batch_update(updates_img, value_input_option="USER_ENTERED")
+    if updates:
+        ws.batch_update(updates, value_input_option="USER_ENTERED")
 
     print(json.dumps({"ok": True, "matched": touched}, ensure_ascii=False))
 
