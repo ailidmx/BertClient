@@ -15,6 +15,8 @@ on:
         description: 'Telegram chat id to notify (optional)'
         required: false
         default: ''
+  repository_dispatch:
+    types: [regen_product_image]
 
 jobs:
   regen:
@@ -82,8 +84,8 @@ jobs:
         env:
           BOT_NOTIFY_URL: ${{ secrets.BOT_NOTIFY_URL }}
           BOT_NOTIFY_TOKEN: ${{ secrets.BOT_NOTIFY_TOKEN }}
-          CHAT_ID: ${{ github.event.inputs.chat_id }}
-          PRODUCT_NAME: ${{ github.event.inputs.product_name }}
+          CHAT_ID: ${{ github.event.inputs.chat_id || github.event.client_payload.chat_id || '' }}
+          PRODUCT_NAME: ${{ github.event.inputs.product_name || github.event.client_payload.product_name || '' }}
           RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           if [ -z "$CHAT_ID" ] || [ -z "$BOT_NOTIFY_URL" ]; then
@@ -103,10 +105,12 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GCP_SA_JSON: ${{ secrets.GCP_SA_JSON }}
+          PRODUCT_NAME_INPUT: ${{ github.event.inputs.product_name || github.event.client_payload.product_name || '' }}
+          CATEGORY_INPUT: ${{ github.event.inputs.category || github.event.client_payload.category || '' }}
         run: |
           RESULT_JSON="$(python scripts/regen_product_image.py \
-            --product-name "${{ github.event.inputs.product_name }}" \
-            --category "${{ github.event.inputs.category }}" \
+            --product-name "${PRODUCT_NAME_INPUT}" \
+            --category "${CATEGORY_INPUT}" \
             --sheet-id "1XdMrGB9Je9w-oVj3V0qM-92WNd8TFjmvo0sqG5w_5xc" \
             --sheet-name "GENERAL" \
             --repo-owner "ailidmx" \
@@ -129,8 +133,8 @@ PY
         env:
           BOT_NOTIFY_URL: ${{ secrets.BOT_NOTIFY_URL }}
           BOT_NOTIFY_TOKEN: ${{ secrets.BOT_NOTIFY_TOKEN }}
-          CHAT_ID: ${{ github.event.inputs.chat_id }}
-          PRODUCT_NAME: ${{ github.event.inputs.product_name }}
+          CHAT_ID: ${{ github.event.inputs.chat_id || github.event.client_payload.chat_id || '' }}
+          PRODUCT_NAME: ${{ github.event.inputs.product_name || github.event.client_payload.product_name || '' }}
           IMAGE_URL: ${{ steps.regen.outputs.image_url }}
           RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
@@ -152,8 +156,8 @@ PY
         env:
           BOT_NOTIFY_URL: ${{ secrets.BOT_NOTIFY_URL }}
           BOT_NOTIFY_TOKEN: ${{ secrets.BOT_NOTIFY_TOKEN }}
-          CHAT_ID: ${{ github.event.inputs.chat_id }}
-          PRODUCT_NAME: ${{ github.event.inputs.product_name }}
+          CHAT_ID: ${{ github.event.inputs.chat_id || github.event.client_payload.chat_id || '' }}
+          PRODUCT_NAME: ${{ github.event.inputs.product_name || github.event.client_payload.product_name || '' }}
           RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           if [ -z "$CHAT_ID" ] || [ -z "$BOT_NOTIFY_URL" ]; then
@@ -178,5 +182,6 @@ PY
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "chore: regen image for ${{ github.event.inputs.product_name }}"
+          PRODUCT_NAME_COMMIT="${{ github.event.inputs.product_name || github.event.client_payload.product_name || 'product' }}"
+          git commit -m "chore: regen image for ${PRODUCT_NAME_COMMIT}"
           git push origin main
