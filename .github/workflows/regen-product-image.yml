@@ -7,17 +7,14 @@ on:
       product_name:
         description: 'Product name (ARTICULO)'
         required: true
-        type: string
       category:
         description: 'Category (optional)'
         required: false
         default: ''
-        type: string
       chat_id:
         description: 'Telegram chat id to notify (optional)'
         required: false
         default: ''
-        type: string
 
 jobs:
   regen:
