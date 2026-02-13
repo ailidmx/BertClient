@@ -4,6 +4,7 @@ import json
 import os
 import re
 import urllib.request
+import urllib.error
 from pathlib import Path
 
 import gspread
@@ -61,12 +62,26 @@ def generate_image_b64(prompt: str, api_key: str, model: str = "gpt-image-1", si
             "Content-Type": "application/json",
         },
     )
-    with urllib.request.urlopen(req, timeout=180) as resp:
-        body = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as err:
+        raw = err.read().decode("utf-8", errors="replace") if hasattr(err, "read") else ""
+        raise RuntimeError(f"OpenAI HTTP {err.code}: {raw}") from err
     data = body.get("data") or []
     if not data or not data[0].get("b64_json"):
         raise RuntimeError(f"OpenAI image response invalid: {body}")
     return data[0]["b64_json"]
+
+
+def generate_image_with_fallback(prompt: str, api_key: str, models: list[str], size: str):
+    last = None
+    for model in models:
+        try:
+            return generate_image_b64(prompt, api_key, model=model, size=size), model
+        except Exception as exc:
+            last = exc
+    raise RuntimeError(f"All models failed ({models}): {last}")
 
 
 def main():
@@ -82,6 +97,7 @@ def main():
     parser.add_argument("--out-dir", default="img/product")
     parser.add_argument("--prompt-file", default="/tmp/prompt_casabert.txt")
     parser.add_argument("--model", default="gpt-image-1")
+    parser.add_argument("--fallback-model", default="dall-e-3")
     parser.add_argument("--size", default="1024x1024")
     args = parser.parse_args()
 
@@ -135,7 +151,8 @@ def main():
     visual = target_row[idx_visual].strip() if idx_visual is not None and idx_visual < len(target_row) else ""
 
     prompt = render_prompt(prompt_template, product_name, cat, bg, visual)
-    b64 = generate_image_b64(prompt, api_key, model=args.model, size=args.size)
+    models = [m for m in [args.model, args.fallback_model] if m]
+    b64, used_model = generate_image_with_fallback(prompt, api_key, models=models, size=args.size)
     out_path.write_bytes(base64.b64decode(b64))
 
     cdn_url = (
@@ -150,6 +167,7 @@ def main():
     print(json.dumps({
         "ok": True,
         "product": product_name,
+        "model": used_model,
         "file": str(out_path),
         "cdn_url": cdn_url,
     }))
